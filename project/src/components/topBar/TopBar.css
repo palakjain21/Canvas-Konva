@@ -1,0 +1,15 @@
+.title{
+width:30%;
+height: 2.5rem;
+padding: 24px 56px 24px 56px;
+border-radius: 32px 32px 0px 0px;
+background-color: #1B34FF;
+color: white;
+font-size: 2.5rem;
+font-weight: 600;
+margin-left: 1px;
+}
+.subTitle{
+    padding: 0px 56px 0px 56px;
+    font-size: 2rem;
+}
