@@ -496,6 +496,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Stage, Layer, Line, Circle, Text } from "react-konva";
+import "./Canvas.css";
 
 export default function Canvas() {
   const gridSize = 450;
@@ -507,6 +508,7 @@ export default function Canvas() {
   const [points, setPoints] = useState([]);
   const [nextPointName, setNextPointName] = useState("A");
   const [lineDrawingMode, setLineDrawingMode] = useState(false);
+  const [lineLengths, setLineLengths] = useState([]);
 
   const toggleLineDrawingMode = () => {
     setLineDrawingMode(!lineDrawingMode);
@@ -563,6 +565,22 @@ export default function Canvas() {
     }
   };
 
+  const calculateLength = (x1, y1, x2, y2) => {
+    // Calculate distance in pixels
+    const distancePixels = Math.sqrt(
+      Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
+    );
+    // Convert to centimeters (4 grid points = 1 cm)
+    return distancePixels / (gridUnit / 4);
+  };
+
+  useEffect(() => {
+    const newLengths = lines.map((line) =>
+      calculateLength(line[0], line[1], line[2], line[3]).toFixed(2)
+    );
+    setLineLengths(newLengths);
+  }, [lines]);
+
   const updateLinePoint = (lineIndex, pointIndex, x, y) => {
     const newLines = lines.map((line, index) => {
       if (index === lineIndex) {
@@ -579,6 +597,15 @@ export default function Canvas() {
     const pointToUpdate = lineIndex * 2 + Math.floor(pointIndex / 2);
     newPoints[pointToUpdate] = { ...newPoints[pointToUpdate], x, y };
     setPoints(newPoints);
+
+    const updatedLengths = [...lineLengths];
+    updatedLengths[lineIndex] = calculateLength(
+      newLines[lineIndex][0],
+      newLines[lineIndex][1],
+      newLines[lineIndex][2],
+      newLines[lineIndex][3]
+    ).toFixed(2);
+    setLineLengths(updatedLengths);
   };
   const drawGrid = () => {
     let gridLines = [];
@@ -609,14 +636,23 @@ export default function Canvas() {
         <Layer>
           {drawGrid()}
           {lines.map((line, index) => (
-            <Line
-              key={index}
-              points={line}
-              stroke="blue"
-              strokeWidth={3}
-              lineCap="round"
-              lineJoin="round"
-            />
+            <>
+              <Line
+                key={index}
+                points={line}
+                stroke="black"
+                strokeWidth={2}
+                lineCap="round"
+                lineJoin="round"
+              />
+              <Text
+                x={(line[0] + line[2]) / 2}
+                y={(line[1] + line[3]) / 2}
+                text={`${lineLengths[index]} cm`}
+                fontSize={12}
+                fill="black"
+              />
+            </>
           ))}
           {points.map((point, index) => (
             <React.Fragment key={index}>
@@ -647,17 +683,25 @@ export default function Canvas() {
           ))}
         </Layer>
       </Stage>
-      <button onClick={toggleLineDrawingMode}>
+      <button onClick={toggleLineDrawingMode} className="lineSelection">
         {lineDrawingMode ? (
-          <Stage width={100} height={50}>
+          <Stage width={400} height={50}>
             <Layer>
-              <Line points={[10, 20, 15, 20]} stroke="grey" strokeWidth={1} />
+              <Line points={[150, 25, 300, 25]} stroke="grey" strokeWidth={1} />
+              <Circle x="150" y="25" radius={5} fill="grey" />
+              <Circle x="300" y="25" radius={5} fill="grey" />
             </Layer>
           </Stage>
         ) : (
-          <Stage width={50} height={50}>
+          <Stage width={400} height={50}>
             <Layer>
-              <Line points={[10, 20, 50, 20]} stroke="black" strokeWidth={1} />
+              <Line
+                points={[150, 25, 300, 25]}
+                stroke="black"
+                strokeWidth={1}
+              />
+              <Circle x="150" y="25" radius={5} fill="black" />
+              <Circle x="300" y="25" radius={5} fill="black" />
             </Layer>
           </Stage>
         )}
